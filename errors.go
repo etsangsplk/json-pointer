@@ -9,6 +9,7 @@ type Error struct {
 	indexOutOfBounds int
 	noSuchProperty   string
 	parseError       string
+	notJSON          *interface{}
 }
 
 func (e *Error) Error() string {
@@ -22,6 +23,8 @@ func (e *Error) Error() string {
 		return fmt.Sprintf("no such property: %#v", e.noSuchProperty)
 	} else if e.ParseError() {
 		return fmt.Sprintf("error parsing JSON Pointer: %#v", e.parseError)
+	} else if e.NotJSON() {
+		return fmt.Sprintf("not a json value: %#v", e.notJSON)
 	} else {
 		return "unknown error"
 	}
@@ -56,4 +59,15 @@ func (e *Error) NoSuchProperty() bool {
 // correctly represent a JSON Pointer.
 func (e *Error) ParseError() bool {
 	return e.parseError != ""
+}
+
+// NotJSON indicates that the error is due to attempting to evaluate a JSON
+// Pointer against data which is not in the standard Golang representation of
+// JSON.
+//
+// The standard Golang representation of JSON is specified here:
+//
+// https://golang.org/pkg/encoding/json/#Unmarshal
+func (e *Error) NotJSON() bool {
+	return e.notJSON != nil
 }

@@ -146,7 +146,17 @@ var evalTests = []struct {
 		"hello, world",
 		nil,
 	},
+	{
+		[]string{""},
+		struct{}{},
+		nil,
+		&Error{notJSON: &wrappedEmptyStruct},
+	},
 }
+
+// wrappedEmptyStruct is created as a separate variable because one cannot take
+// the address of this value when described as a literal.
+var wrappedEmptyStruct = interface{}(struct{}{})
 
 func TestEval(t *testing.T) {
 	for i, tt := range evalTests {

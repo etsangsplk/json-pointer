@@ -94,6 +94,8 @@ func (p Ptr) Eval(doc interface{}) (*interface{}, error) {
 			if !ok {
 				return nil, &Error{noSuchProperty: token}
 			}
+		default:
+			return nil, &Error{notJSON: &v}
 		}
 	}
 
