@@ -72,11 +72,7 @@ func (p Ptr) String() string {
 //
 // Errors, if returned, will be instances of Error from this package.
 func (p Ptr) Eval(doc interface{}) (*interface{}, error) {
-	i := 0
-
-	for i < len(p.Tokens) {
-		token := p.Tokens[i]
-
+	for _, token := range p.Tokens {
 		switch v := doc.(type) {
 		case nil, bool, float64, string:
 			return nil, &Error{derefPrimitive: token}
@@ -99,8 +95,6 @@ func (p Ptr) Eval(doc interface{}) (*interface{}, error) {
 				return nil, &Error{noSuchProperty: token}
 			}
 		}
-
-		i++
 	}
 
 	return &doc, nil
