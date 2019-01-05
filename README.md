@@ -1,7 +1,10 @@
-# json-pointer
+# json-pointer [![documentation][badge]][godoc]
 
 This library is a Golang implementation of [RFC6901][rfc6901] "JavaScript Object
 Notation (JSON) Pointer".
+
+[badge]: https://godoc.org/github.com/ucarion/json-pointer?status.svg
+[godoc]: https://godoc.org/github.com/ucarion/json-pointer
 
 ## Usage
 
