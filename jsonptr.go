@@ -75,13 +75,15 @@ func (p Ptr) Eval(doc interface{}) (*interface{}, error) {
 	i := 0
 
 	for i < len(p.Tokens) {
+		token := p.Tokens[i]
+
 		switch v := doc.(type) {
 		case nil, bool, float64, string:
-			return nil, &Error{derefPrimitive: true}
+			return nil, &Error{derefPrimitive: token}
 		case []interface{}:
-			n, err := strconv.ParseInt(p.Tokens[i], 10, 0)
+			n, err := strconv.ParseInt(token, 10, 0)
 			if err != nil {
-				return nil, &Error{numParseError: p.Tokens[i]}
+				return nil, &Error{numParseError: token}
 			}
 
 			if n < 0 || int(n) >= len(v) {
@@ -91,10 +93,10 @@ func (p Ptr) Eval(doc interface{}) (*interface{}, error) {
 			doc = v[n]
 		case map[string]interface{}:
 			var ok bool
-			doc, ok = v[p.Tokens[i]]
+			doc, ok = v[token]
 
 			if !ok {
-				return nil, &Error{noSuchProperty: p.Tokens[i]}
+				return nil, &Error{noSuchProperty: token}
 			}
 		}
 

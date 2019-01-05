@@ -4,7 +4,7 @@ import "fmt"
 
 // Error represents all types that may be returned from jsonpointer.
 type Error struct {
-	derefPrimitive   bool
+	derefPrimitive   string
 	numParseError    string
 	indexOutOfBounds int
 	noSuchProperty   string
@@ -13,7 +13,7 @@ type Error struct {
 
 func (e *Error) Error() string {
 	if e.IsDerefPrimitive() {
-		return "cannot derefence property of primitive type"
+		return fmt.Sprintf("cannot get property of primitive type: %#v", e.derefPrimitive)
 	} else if e.NumParseError() {
 		return fmt.Sprintf("cannot parse as number: %#v", e.numParseError)
 	} else if e.IndexOutOfBounds() {
@@ -31,7 +31,7 @@ func (e *Error) Error() string {
 // a property of a primitive type (namely null, a boolean, a number, or a
 // string).
 func (e *Error) IsDerefPrimitive() bool {
-	return e.derefPrimitive
+	return e.derefPrimitive != ""
 }
 
 // NumParseError indicates that the error is due to attempting to dereference a
