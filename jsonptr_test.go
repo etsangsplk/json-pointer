@@ -1,6 +1,7 @@
 package jsonpointer
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -199,13 +200,31 @@ var newAndParseTests = []struct {
 func TestNewAndParse(t *testing.T) {
 	for _, tt := range newAndParseTests {
 		t.Run(tt.in, func(t *testing.T) {
+			// Test that New parses the expected tokens, and that String inverts the
+			// process. Verify, when valid, that JSON marshalling/unmarshalling works
+			// similarly.
 			ptr, err := New(tt.in)
 			assert.Equal(t, tt.err, err)
 			assert.Equal(t, tt.out, ptr.Tokens)
 
-			// Only attempt to convert back to string if no parse error was expected.
+			// Only attempt to convert back to string, or serialize if no parse error
+			// was expected.
 			if tt.err == nil {
 				assert.Equal(t, tt.in, ptr.String())
+
+				// Test that parsing from JSON yields the same result as New.
+				inJSON, err := json.Marshal(tt.in)
+				assert.Nil(t, err)
+
+				var ptrFromJSON Ptr
+				err = json.Unmarshal(inJSON, &ptrFromJSON)
+				assert.Nil(t, err)
+				assert.Equal(t, tt.out, ptrFromJSON.Tokens)
+
+				// Test that serializing to JSON yields the same result as String.
+				outJSON, err := json.Marshal(ptr)
+				assert.Nil(t, err)
+				assert.Equal(t, inJSON, outJSON)
 			}
 		})
 	}

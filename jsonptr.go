@@ -1,6 +1,7 @@
 package jsonpointer
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -100,4 +101,27 @@ func (p Ptr) Eval(doc interface{}) (*interface{}, error) {
 	}
 
 	return &doc, nil
+}
+
+// UnmarshalJSON implements Unmarshaler for Ptr.
+//
+// Ptr implements unmarshalling from JSON as specified by RFC6901, Section 5:
+//
+// https://tools.ietf.org/html/rfc6901#section-5
+func (p *Ptr) UnmarshalJSON(data []byte) error {
+	var str string
+	err := json.Unmarshal(data, &str)
+	if err != nil {
+		return err
+	}
+
+	*p, err = New(str)
+	return err
+}
+
+// MarshalJSON implements Marshaler for Ptr.
+//
+// This function is the inverse of UnmarshalJSON.
+func (p Ptr) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.String())
 }
