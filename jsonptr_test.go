@@ -161,3 +161,42 @@ func TestEval(t *testing.T) {
 		})
 	}
 }
+
+// These test cases are lifted from RFC6901, Section 5:
+//
+// https://tools.ietf.org/html/rfc6901#section-5
+var newAndParseTests = []struct {
+	in  string
+	out []string
+	err error
+}{
+	{"", []string{}, nil},
+	{"/foo", []string{"foo"}, nil},
+	{"/foo/0", []string{"foo", "0"}, nil},
+	{"/", []string{""}, nil},
+	{"/a~1b", []string{"a/b"}, nil},
+	{"/c%d", []string{"c%d"}, nil},
+	{"/e^f", []string{"e^f"}, nil},
+	{"/g|h", []string{"g|h"}, nil},
+	{"/i\\j", []string{"i\\j"}, nil},
+	{"/k\"l", []string{"k\"l"}, nil},
+	{"/ ", []string{" "}, nil},
+	{"/m~0n", []string{"m~n"}, nil},
+	{"/o~0~1p/q~1~0r", []string{"o~/p", "q/~r"}, nil},
+	{" ", nil, &Error{parseError: " "}},
+}
+
+func TestNewAndParse(t *testing.T) {
+	for _, tt := range newAndParseTests {
+		t.Run(tt.in, func(t *testing.T) {
+			ptr, err := New(tt.in)
+			assert.Equal(t, tt.err, err)
+			assert.Equal(t, tt.out, ptr.Tokens)
+
+			// Only attempt to convert back to string if no parse error was expected.
+			if tt.err == nil {
+				assert.Equal(t, tt.in, ptr.String())
+			}
+		})
+	}
+}

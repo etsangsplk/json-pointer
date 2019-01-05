@@ -1,7 +1,9 @@
 package jsonpointer
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 )
 
 // Ptr represents a JSON Pointer in parsed form.
@@ -10,6 +12,59 @@ type Ptr struct {
 	// sequences such as "~0" and "~1" are already parsed into "~" and "/",
 	// respectively.
 	Tokens []string
+}
+
+// New parses a JSON Pointer represented as a string value.
+//
+// This function will handle JSON Pointer escape sequences, converting "~0" to
+// "~" and "~1" to "/".
+//
+// If s is not empty and does not begin with "/", an error will be returned.
+func New(s string) (Ptr, error) {
+	// From the ABNF syntax of JSON Pointer, the only valid initial character for
+	// a JSON Pointer is "/". Empty strings are acceptable.
+	//
+	// https://tools.ietf.org/html/rfc6901#section-3
+	//
+	// Other than this limitation, all strings are valid JSON Pointers.
+	if s == "" {
+		return Ptr{Tokens: []string{}}, nil
+	}
+
+	if !strings.HasPrefix(s, "/") {
+		return Ptr{}, &Error{parseError: s}
+	}
+
+	tokens := strings.Split(s, "/")[1:]
+	for i, token := range tokens {
+		// This sequence of replacements follows the instructions from:
+		//
+		// https://tools.ietf.org/html/rfc6901#section-4
+		token = strings.Replace(token, "~1", "/", -1)
+		token = strings.Replace(token, "~0", "~", -1)
+		tokens[i] = token
+	}
+
+	return Ptr{Tokens: tokens}, nil
+}
+
+// String is an implementation of Stringer for Ptr.
+//
+// This functions acts as the inverse of New.
+func (p Ptr) String() string {
+	// Special case: empty sequence of tokens is represented as empty string.
+	if len(p.Tokens) == 0 {
+		return ""
+	}
+
+	parts := make([]string, len(p.Tokens))
+	for i, token := range p.Tokens {
+		token = strings.Replace(token, "~", "~0", -1)
+		token = strings.Replace(token, "/", "~1", -1)
+		parts[i] = token
+	}
+
+	return fmt.Sprintf("/%s", strings.Join(parts, "/"))
 }
 
 // Eval evaluates a Ptr against a document, returning a (Golang) pointer into

@@ -8,6 +8,7 @@ type Error struct {
 	numParseError    string
 	indexOutOfBounds int
 	noSuchProperty   string
+	parseError       string
 }
 
 func (e *Error) Error() string {
@@ -19,6 +20,8 @@ func (e *Error) Error() string {
 		return fmt.Sprintf("index out of bounds: %d", e.indexOutOfBounds)
 	} else if e.NoSuchProperty() {
 		return fmt.Sprintf("no such property: %#v", e.noSuchProperty)
+	} else if e.ParseError() {
+		return fmt.Sprintf("error parsing JSON Pointer: %#v", e.parseError)
 	} else {
 		return "unknown error"
 	}
@@ -47,4 +50,10 @@ func (e *Error) IndexOutOfBounds() bool {
 // property of an object that does not have that property.
 func (e *Error) NoSuchProperty() bool {
 	return e.noSuchProperty != ""
+}
+
+// ParseError indicates that the error is due to parsing a string that does not
+// correctly represent a JSON Pointer.
+func (e *Error) ParseError() bool {
+	return e.parseError != ""
 }
